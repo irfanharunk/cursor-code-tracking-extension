@@ -1,0 +1,89 @@
+{
+  "name": "cursor-code-tracking",
+  "displayName": "Cursor Code Tracking",
+  "description": "Track human vs LLM code contributions with visual indicators and reporting",
+  "version": "0.1.0",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "files": [
+    "out/**/*",
+    "src/**/*",
+    "README.md",
+    ".cursorrules"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "cursor-code-tracking.generateReport",
+        "title": "Generate Code Origin Report"
+      },
+      {
+        "command": "cursor-code-tracking.toggleTracking",
+        "title": "Toggle Code Tracking"
+      }
+    ],
+    "configuration": {
+      "title": "Cursor Code Tracking",
+      "properties": {
+        "cursorCodeTracking.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable code tracking"
+        },
+        "cursorCodeTracking.showGutterIcons": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show gutter icons for human/LLM lines"
+        },
+        "cursorCodeTracking.showBackgroundTinting": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show background tinting for LLM lines"
+        },
+        "cursorCodeTracking.reportFormat": {
+          "type": "string",
+          "enum": [
+            "json",
+            "csv"
+          ],
+          "default": "json",
+          "description": "Report output format"
+        },
+        "cursorCodeTracking.llmThreshold": {
+          "type": "number",
+          "default": 70,
+          "description": "Warning threshold for LLM code percentage"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "16.x",
+    "@types/vscode": "^1.74.0",
+    "@typescript-eslint/eslint-plugin": "^5.42.0",
+    "@typescript-eslint/parser": "^5.42.0",
+    "@vscode/vsce": "^3.6.0",
+    "eslint": "^8.26.0",
+    "typescript": "^4.8.4"
+  },
+  "dependencies": {
+    "fs-extra": "^11.1.1"
+  }
+}

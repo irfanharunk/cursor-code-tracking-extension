@@ -1,0 +1,30 @@
+{
+  "tracking": {
+    "human_edit_triggers": [
+      "keystroke",
+      "backspace",
+      "delete",
+      "enter",
+      "paste_from_clipboard"
+    ],
+    "llm_triggers": [
+      "copilot_accept",
+      "cursor_autocomplete",
+      "ai_command_run"
+    ],
+    "exclusions": [
+      "auto_formatting",
+      "import_statements",
+      "generated_code_blocks"
+    ]
+  },
+  "reporting": {
+    "output_format": "json|csv",
+    "granularity": "file|project",
+    "metrics": [
+      "human_lines_count",
+      "llm_lines_count",
+      "human_llm_ratio"
+    ]
+  }
+}
