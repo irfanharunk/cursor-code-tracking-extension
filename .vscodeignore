@@ -7,8 +7,6 @@ INSTALL.md
 test.md
 
 # Build artifacts
-out/
-node_modules/
 
 # IDE files
 .cursor/

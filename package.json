@@ -1,8 +1,14 @@
 {
   "name": "cursor-code-tracking",
+  "publisher": "parth",
   "displayName": "Cursor Code Tracking",
   "description": "Track human vs LLM code contributions with visual indicators and reporting",
   "version": "0.1.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Parth/cursor-code-tracking-extension.git"
+  },
   "engines": {
     "vscode": "^1.74.0"
   },
