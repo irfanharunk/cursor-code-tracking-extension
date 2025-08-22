@@ -145,3 +145,4 @@ git commit -m "fix: resolve gutter icon display issue"
 - The `.gitignore` file excludes sensitive files like `node_modules/` and build artifacts
 - The `.vscodeignore` file ensures only necessary files are included in the VSIX package
 - No API keys or sensitive configuration is committed to the repository 
+

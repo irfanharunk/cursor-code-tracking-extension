@@ -83,7 +83,21 @@ export class ConfigManager {
     }
 
     public getReportingConfig(): ReportingConfig {
-        return this.cursorRules?.reporting || this.getDefaultConfig().reporting;
+        const config = this.cursorRules?.reporting || this.getDefaultConfig().reporting;
+        
+        // Validate output_format
+        if (config.output_format !== 'json' && config.output_format !== 'csv') {
+            console.warn(`Invalid output_format: ${config.output_format}, defaulting to 'json'`);
+            config.output_format = 'json';
+        }
+        
+        // Validate granularity
+        if (config.granularity !== 'file' && config.granularity !== 'project') {
+            console.warn(`Invalid granularity: ${config.granularity}, defaulting to 'project'`);
+            config.granularity = 'project';
+        }
+        
+        return config;
     }
 
     public getWorkspaceRoot(): string {

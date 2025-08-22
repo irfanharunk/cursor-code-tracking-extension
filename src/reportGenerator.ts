@@ -30,9 +30,20 @@ export class ReportGenerator {
             return;
         }
 
+        // Check if we have a valid workspace
+        const workspaceRoot = this.configManager.getWorkspaceRoot();
+        if (!workspaceRoot) {
+            vscode.window.showErrorMessage('No workspace open. Please open a folder or workspace first.');
+            return;
+        }
+
         const stats = this.codeTracker.getStats();
         const lineData = this.codeTracker.getLineData();
         const reportingConfig = this.configManager.getReportingConfig();
+
+        console.log('Generating report with stats:', stats);
+        console.log('Files analyzed:', lineData.size);
+        console.log('Workspace root:', workspaceRoot);
 
         const reportData: ReportData = {
             human_lines: stats.humanLines,
@@ -43,36 +54,134 @@ export class ReportGenerator {
         };
 
         try {
-            const workspaceRoot = this.configManager.getWorkspaceRoot();
             const statsDir = path.join(workspaceRoot, '.cursor', 'stats');
+            console.log('Attempting to create stats directory at:', statsDir);
             
             // Ensure stats directory exists
             await fs.ensureDir(statsDir);
+            console.log('Stats directory created/verified:', statsDir);
 
-            const fileName = `code_origin_report_${new Date().toISOString().split('T')[0]}`;
+            // Verify directory was actually created
+            const dirExists = await fs.pathExists(statsDir);
+            console.log('Directory exists after creation:', dirExists);
             
-            if (reportingConfig.output_format === 'json') {
-                await this.generateJsonReport(statsDir, fileName, reportData);
-            } else if (reportingConfig.output_format === 'csv') {
-                await this.generateCsvReport(statsDir, fileName, reportData);
+            if (!dirExists) {
+                throw new Error(`Failed to create stats directory: ${statsDir}`);
             }
 
-            vscode.window.showInformationMessage(`Report generated: ${fileName}`);
+            const fileName = `code_origin_report_${new Date().toISOString().split('T')[0]}`;
+            console.log('Report filename:', fileName);
+            console.log('Output format:', reportingConfig.output_format);
+            
+            if (reportingConfig.output_format === 'json') {
+                console.log('Generating JSON report...');
+                await this.generateJsonReport(statsDir, fileName, reportData);
+                console.log('JSON report generated successfully');
+            } else if (reportingConfig.output_format === 'csv') {
+                console.log('Generating CSV report...');
+                await this.generateCsvReport(statsDir, fileName, reportData);
+                console.log('CSV report generated successfully');
+            } else {
+                console.error('Unknown output format:', reportingConfig.output_format);
+                throw new Error(`Unknown output format: ${reportingConfig.output_format}`);
+            }
+
+            const fullPath = path.join(statsDir, `${fileName}.${reportingConfig.output_format}`);
+            console.log('Checking if report file exists at:', fullPath);
+            
+            const fileExists = await fs.pathExists(fullPath);
+            console.log('Report file exists after generation:', fileExists);
+            
+            if (!fileExists) {
+                throw new Error(`Report file was not created: ${fullPath}`);
+            }
+            
+            const action = fileExists ? 'updated' : 'created';
+            vscode.window.showInformationMessage(`Report ${action}: ${fullPath}`);
+            
+            // List contents of stats directory
+            const dirContents = await fs.readdir(statsDir);
+            console.log('Contents of stats directory:', dirContents);
+            
         } catch (error) {
             console.error('Error generating report:', error);
-            vscode.window.showErrorMessage('Failed to generate report');
+            vscode.window.showErrorMessage(`Failed to generate report: ${error}`);
         }
     }
 
     private async generateJsonReport(statsDir: string, fileName: string, data: ReportData): Promise<void> {
         const filePath = path.join(statsDir, `${fileName}.json`);
-        await fs.writeJson(filePath, data, { spaces: 2 });
+        console.log('JSON report file path:', filePath);
+        
+        try {
+            // Check if file exists and read existing data
+            const fileExists = await fs.pathExists(filePath);
+            console.log('JSON file exists before generation:', fileExists);
+            
+            if (fileExists) {
+                console.log('Reading existing JSON file...');
+                const existingData = await fs.readJson(filePath);
+                console.log('Existing data type:', typeof existingData, 'isArray:', Array.isArray(existingData));
+                
+                // If existing data is an array, append to it
+                if (Array.isArray(existingData)) {
+                    console.log('Appending to existing array...');
+                    existingData.push(data);
+                    await fs.writeJson(filePath, existingData, { spaces: 2 });
+                } else {
+                    // If it's a single object, convert to array and append
+                    console.log('Converting single object to array and appending...');
+                    await fs.writeJson(filePath, [existingData, data], { spaces: 2 });
+                }
+            } else {
+                // Create new file with array containing single entry
+                console.log('Creating new JSON file with array...');
+                await fs.writeJson(filePath, [data], { spaces: 2 });
+            }
+            
+            // Verify file was written
+            const finalFileExists = await fs.pathExists(filePath);
+            console.log('JSON file exists after generation:', finalFileExists);
+            
+            if (finalFileExists) {
+                const fileStats = await fs.stat(filePath);
+                console.log('JSON file size:', fileStats.size, 'bytes');
+            }
+            
+        } catch (error) {
+            console.error('Error updating JSON report:', error);
+            // Fallback to creating new file
+            console.log('Fallback: Creating new JSON file...');
+            await fs.writeJson(filePath, [data], { spaces: 2 });
+        }
     }
 
     private async generateCsvReport(statsDir: string, fileName: string, data: ReportData): Promise<void> {
         const filePath = path.join(statsDir, `${fileName}.csv`);
-        const csvContent = this.convertToCsv(data);
-        await fs.writeFile(filePath, csvContent, 'utf8');
+        
+        try {
+            // Check if file exists and read existing data
+            if (await fs.pathExists(filePath)) {
+                const existingContent = await fs.readFile(filePath, 'utf8');
+                const newRow = this.convertToCsvRow(data);
+                
+                // Append new row to existing CSV
+                await fs.appendFile(filePath, '\n' + newRow);
+            } else {
+                // Create new file with headers and first row
+                const csvContent = this.convertToCsv(data);
+                await fs.writeFile(filePath, csvContent, 'utf8');
+            }
+        } catch (error) {
+            console.error('Error updating CSV report:', error);
+            // Fallback to creating new file
+            const csvContent = this.convertToCsv(data);
+            await fs.writeFile(filePath, csvContent, 'utf8');
+        }
+    }
+
+    private convertToCsvRow(data: ReportData): string {
+        return Object.values(data).join(',');
     }
 
     private convertToCsv(data: ReportData): string {

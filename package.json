@@ -3,7 +3,7 @@
   "publisher": "parth",
   "displayName": "Cursor Code Tracking",
   "description": "Track human vs LLM code contributions with visual indicators and reporting",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -16,24 +16,28 @@
     "Other"
   ],
   "activationEvents": [
-    "onStartupFinished"
+    "onStartupFinished",
+    "onCommand:cursor-code-tracking.generateReport",
+    "onCommand:cursor-code-tracking.toggleTracking"
   ],
   "main": "./out/extension.js",
-  "files": [
-    "out/**/*",
-    "src/**/*",
-    "README.md",
-    ".cursorrules"
-  ],
+  
   "contributes": {
     "commands": [
       {
         "command": "cursor-code-tracking.generateReport",
-        "title": "Generate Code Origin Report"
+        "title": "Generate Code Origin Report",
+        "category": "Cursor Code Tracking"
       },
       {
         "command": "cursor-code-tracking.toggleTracking",
-        "title": "Toggle Code Tracking"
+        "title": "Toggle Code Tracking",
+        "category": "Cursor Code Tracking"
+      },
+      {
+        "command": "cursor-code-tracking.debug",
+        "title": "Debug Code Tracking",
+        "category": "Cursor Code Tracking"
       }
     ],
     "configuration": {

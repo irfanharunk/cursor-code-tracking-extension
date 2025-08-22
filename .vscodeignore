@@ -13,7 +13,6 @@ test.md
 .vscode/
 
 # Package files
-package-lock.json
 *.vsix
 
 # Git files
@@ -43,7 +42,8 @@ coverage/
 .nyc_output
 
 # Dependency directories
-node_modules/
+# Keep production runtime dependencies in the VSIX.
+# If you later bundle the extension, you can re-exclude node_modules.
 
 # Optional npm cache directory
 .npm
